@@ -211,7 +211,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-08-31 11:36:23" itemprop="dateModified" datetime="2025-08-31T11:36:23+08:00">2025-08-31</time>
+                <time title="修改时间：2025-08-31 11:38:55" itemprop="dateModified" datetime="2025-08-31T11:38:55+08:00">2025-08-31</time>
               </span>
 
           
@@ -243,12 +243,12 @@
 <p>本部分聚焦核心流程，单独提取并合并 Git连接GitHub、Hexo与GitHub关联配置、博客部署到GitHub Pages 三个关键步骤，方便快速查阅操作。</p>
 <p>一、使用 Git 连接 GitHub 账户（SSH 方式，推荐）</p>
 <p>SSH 连接可避免每次部署重复输入账号密码，操作如下：</p>
-<p>1. 打开命令行（Windows 用 Git Bash或cmd，macOS&#x2F;Linux 用终端），输入命令生成 SSH 密钥(<a href="mailto:&#x79;&#111;&#117;&#x72;&#95;&#x65;&#x6d;&#97;&#x69;&#x6c;&#x40;&#x65;&#x78;&#97;&#x6d;&#x70;&#108;&#x65;&#46;&#x63;&#111;&#109;">your_email@example.com</a>替换为你的 GitHub 注册邮箱)：</p>
+<p>1. 打开命令行（Windows 用 Git Bash或cmd，macOS&#x2F;Linux 用终端），输入命令生成 SSH 密钥(<a href="mailto:&#x79;&#111;&#117;&#x72;&#95;&#101;&#109;&#x61;&#105;&#x6c;&#x40;&#x65;&#x78;&#x61;&#109;&#x70;&#x6c;&#101;&#46;&#x63;&#x6f;&#109;">your_email@example.com</a>替换为你的 GitHub 注册邮箱)：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa -C &quot;your_email@example.com&quot; </span><br></pre></td></tr></table></figure>
 <p> <br>2. 按 3 次回车（默认保存路径、不设密码），密钥文件默认路径：</p>
 <ul>
 <li>Windows： C:\Users\用户名.ssh </li>
-<li>macOS&#x2F;Linux： ~&#x2F;.ssh <br>3. 找到  id_rsa.pub （公钥文件），用记事本打开并复制全部内容。<br>4. 登录 GitHub，依次点击：右上角头像 → Settings → 左侧 SSH and GPG keys → New SSH key。<br>![[Pasted image 20250831112401.png]]<br>5. Title 填自定义名称（如“我的设备”），Key 粘贴公钥，点击 Add SSH key。<br>6. 验证连接：命令行输入  ssh -T <a href="mailto:&#x67;&#105;&#116;&#x40;&#x67;&#x69;&#116;&#x68;&#x75;&#98;&#46;&#99;&#111;&#109;">git@github.com</a> ，输入  yes  后，显示 “Hi 用户名! You’ve successfully authenticated…” 即成功。</li>
+<li>macOS&#x2F;Linux： ~&#x2F;.ssh <br>3. 找到  id_rsa.pub （公钥文件），用记事本打开并复制全部内容。<br>4. 登录 GitHub，依次点击：右上角头像 → Settings → 左侧 SSH and GPG keys → New SSH key。<br>![[Pasted image 20250831112401.png]]<br>5. Title 填自定义名称（如“我的设备”），Key 粘贴公钥，点击 Add SSH key。<br>6. 验证连接：命令行输入  ssh -T <a href="mailto:&#103;&#105;&#116;&#64;&#x67;&#x69;&#x74;&#x68;&#x75;&#x62;&#46;&#x63;&#x6f;&#109;">git@github.com</a> ，输入  yes  后，显示 “Hi 用户名! You’ve successfully authenticated…” 即成功。</li>
 </ul>
 <p>二、配置 Hexo 与 GitHub 关联（实现部署）</p>
 <p>(一)修改 Hexo 配置文件，指定部署目标仓库：</p>
@@ -280,6 +280,10 @@
 <li>输入这两条命令时，name和“中间有空格的，记得检查一下。</li>
 </ol>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git config --global user.name &quot;yourname&quot; </span><br><span class="line">git config --global user.email &quot;youremail&quot;</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>如果上传不了，可能需要神奇的魔法（梯子）。</li>
+</ol>
+
       
     </div>
 
