@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>http://yusite.top/2025/08/29/%E5%BB%BA%E7%AB%99%E8%BF%87%E7%A8%8B/%E5%BB%BA%E7%AB%99%E8%BF%87%E7%A8%8B/</loc>
+    <lastmod>2025-09-06</lastmod>
+  </url>
+  <url>
     <loc>http://yusite.top/2025/08/30/Hexo%20+GitHub%20Pages%E9%83%A8%E7%BD%B2%E5%8D%9A%E5%AE%A2/Hexo%20+GitHub%20Pages%E9%83%A8%E7%BD%B2%E5%8D%9A%E5%AE%A2/</loc>
     <lastmod>2025-08-31</lastmod>
   </url>
@@ -10,10 +14,6 @@
   </url>
   <url>
     <loc>http://yusite.top/2025/08/29/Hello%20World/Hello%20World/</loc>
-    <lastmod>2025-08-29</lastmod>
-  </url>
-  <url>
-    <loc>http://yusite.top/2025/08/29/%E5%BB%BA%E7%AB%99%E8%BF%87%E7%A8%8B/%E5%BB%BA%E7%AB%99%E8%BF%87%E7%A8%8B/</loc>
     <lastmod>2025-08-29</lastmod>
   </url>
 </urlset> 
