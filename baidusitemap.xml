@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>http://blog.yusite.top/2025/09/21/hexo_first_blog/</loc>
+    <lastmod>2025-09-21</lastmod>
+  </url>
+  <url>
     <loc>http://blog.yusite.top/2025/08/31/hexo-github-deploy/</loc>
     <lastmod>2025-09-20</lastmod>
   </url>

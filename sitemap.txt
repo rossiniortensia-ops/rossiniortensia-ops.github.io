@@ -1,3 +1,4 @@
+http://blog.yusite.top/2025/09/21/hexo_first_blog/
 http://blog.yusite.top/2025/08/31/hexo-github-deploy/
 http://blog.yusite.top/2025/08/29/%E5%BB%BA%E7%AB%99%E8%BF%87%E7%A8%8B/
 http://blog.yusite.top/about/index-1.html
@@ -14,5 +15,8 @@ http://blog.yusite.top/tags/Hexo/
 http://blog.yusite.top/tags/GitHub/
 http://blog.yusite.top/tags/%E9%83%A8%E7%BD%B2/
 http://blog.yusite.top/tags/%E6%95%99%E7%A8%8B/
+http://blog.yusite.top/tags/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/
+http://blog.yusite.top/tags/GitHub-Pages/
 http://blog.yusite.top/tags/%E8%AF%84%E8%AE%BA/
 http://blog.yusite.top/tags/%E5%8D%9A%E5%AE%A2/
+http://blog.yusite.top/categories/%E5%8D%9A%E5%AE%A2%E6%95%99%E7%A8%8B/
