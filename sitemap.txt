@@ -11,7 +11,6 @@ http://blog.yusite.top/2025/08/29/Hello%20World/
 http://blog.yusite.top/resources/index.html
 http://blog.yusite.top/about/index.html
 http://blog.yusite.top/
-http://blog.yusite.top/tags/%E9%9A%8F%E5%86%99/
 http://blog.yusite.top/tags/%E6%95%99%E7%A8%8B/
 http://blog.yusite.top/tags/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/
 http://blog.yusite.top/tags/Hexo/
@@ -20,4 +19,5 @@ http://blog.yusite.top/tags/%E9%83%A8%E7%BD%B2/
 http://blog.yusite.top/tags/GitHub-Pages/
 http://blog.yusite.top/tags/%E8%AF%84%E8%AE%BA/
 http://blog.yusite.top/tags/%E5%8D%9A%E5%AE%A2/
+http://blog.yusite.top/tags/%E9%9A%8F%E5%86%99/
 http://blog.yusite.top/categories/%E5%8D%9A%E5%AE%A2%E6%95%99%E7%A8%8B/
