@@ -3898,6 +3898,13 @@ figure.highlight pre .javascript .function {
   background-position: bottom;
   background-size: cover;
 }
+#footer:before {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: var(--mark-bg);
+  content: '';
+}
 #footer > * {
   position: relative;
   color: var(--light-grey);
@@ -4002,13 +4009,20 @@ figure.highlight pre .javascript .function {
   -ms-transition: all 0.5s;
   transition: all 0.5s;
 }
+#page-header:not(.not-top-img):before {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: var(--mark-bg);
+  content: '';
+}
 #page-header.full_page {
-  height: 100vh;
+  height: 0.003333333333333px;
   background-attachment: fixed;
 }
 #page-header.full_page #site-info {
   position: absolute;
-  top: 50%;
+  top: /images/background.png;
   padding: 0 10px;
   width: 100%;
 }
