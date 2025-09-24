@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://blog.yusite.top/link/index.html</loc>
+    <loc>http://blog.yusite.top/link/</loc>
     
     <lastmod>2025-09-21</lastmod>
     
@@ -11,7 +11,7 @@
   </url>
   
   <url>
-    <loc>http://blog.yusite.top/categories/index.html</loc>
+    <loc>http://blog.yusite.top/categories/</loc>
     
     <lastmod>2025-09-21</lastmod>
     
@@ -20,7 +20,7 @@
   </url>
   
   <url>
-    <loc>http://blog.yusite.top/tags/index.html</loc>
+    <loc>http://blog.yusite.top/tags/</loc>
     
     <lastmod>2025-09-21</lastmod>
     
@@ -92,7 +92,7 @@
   </url>
   
   <url>
-    <loc>http://blog.yusite.top/resources/index.html</loc>
+    <loc>http://blog.yusite.top/resources/</loc>
     
     <lastmod>2025-08-28</lastmod>
     
@@ -101,7 +101,7 @@
   </url>
   
   <url>
-    <loc>http://blog.yusite.top/about/index.html</loc>
+    <loc>http://blog.yusite.top/about/</loc>
     
     <lastmod>2025-08-28</lastmod>
     
@@ -147,6 +147,13 @@
   </url>
   
   <url>
+    <loc>http://blog.yusite.top/tags/GitHub-Pages/</loc>
+    <lastmod>2025-09-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>http://blog.yusite.top/tags/GitHub/</loc>
     <lastmod>2025-09-24</lastmod>
     <changefreq>weekly</changefreq>
@@ -155,13 +162,6 @@
   
   <url>
     <loc>http://blog.yusite.top/tags/%E9%83%A8%E7%BD%B2/</loc>
-    <lastmod>2025-09-24</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://blog.yusite.top/tags/GitHub-Pages/</loc>
     <lastmod>2025-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
