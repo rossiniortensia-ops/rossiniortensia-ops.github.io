@@ -1,15 +1,10 @@
-/*侧边卡片的透明度 */
-:root {
-  --card-bg: rgba(255, 255, 255, 0.8);
+/* 页脚与头图透明 */
+  #footer{
+    background-color: rgba(0, 0, 0, .25) !important;
+    }
+  #page-header {
+    background: transparent !important;
+  }
+  :root {
+    --card-bg: rgba(255, 255, 255, 0.91);
 }
-
-[data-theme="dark"] {
-  --card-bg: rgba(255, 255, 255, 0.2);
-}
-/* 顶部导航栏透明 */
-.navbar,
-.navbar.navbar-default {
-  background-color: transparent !important;
-  box-shadow: none !important;
-}
-
