@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://blog.yusite.top/63190/</loc>
+    
+    <lastmod>2025-10-03</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>http://blog.yusite.top/13399/</loc>
     
     <lastmod>2025-10-03</lastmod>
@@ -205,6 +214,48 @@
   </url>
   
   <url>
+    <loc>http://blog.yusite.top/tags/Python/</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://blog.yusite.top/tags/VSCode/</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://blog.yusite.top/tags/IDE/</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://blog.yusite.top/tags/PyCharm/</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://blog.yusite.top/tags/Jupyter/</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://blog.yusite.top/tags/%E7%BC%96%E8%BE%91%E5%99%A8/</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>http://blog.yusite.top/tags/%E6%8A%97%E6%88%98%E7%BA%AA%E5%BF%B5%E6%97%A5/</loc>
     <lastmod>2025-10-03</lastmod>
     <changefreq>weekly</changefreq>
@@ -236,6 +287,20 @@
   
   <url>
     <loc>http://blog.yusite.top/categories/%E9%9A%8F%E7%AC%94/</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://blog.yusite.top/categories/Python/</loc>
+    <lastmod>2025-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://blog.yusite.top/categories/Python/%E5%B7%A5%E5%85%B7%E6%8E%A8%E8%8D%90/</loc>
     <lastmod>2025-10-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>

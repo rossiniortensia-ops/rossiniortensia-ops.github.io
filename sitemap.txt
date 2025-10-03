@@ -1,3 +1,4 @@
+http://blog.yusite.top/63190/
 http://blog.yusite.top/13399/
 http://blog.yusite.top/49874/
 http://blog.yusite.top/28146/
@@ -23,8 +24,16 @@ http://blog.yusite.top/tags/%E9%83%A8%E7%BD%B2/
 http://blog.yusite.top/tags/GitHub-Pages/
 http://blog.yusite.top/tags/%E8%AF%84%E8%AE%BA/
 http://blog.yusite.top/tags/%E5%8D%9A%E5%AE%A2/
+http://blog.yusite.top/tags/Python/
+http://blog.yusite.top/tags/VSCode/
+http://blog.yusite.top/tags/IDE/
+http://blog.yusite.top/tags/PyCharm/
+http://blog.yusite.top/tags/Jupyter/
+http://blog.yusite.top/tags/%E7%BC%96%E8%BE%91%E5%99%A8/
 http://blog.yusite.top/tags/%E6%8A%97%E6%88%98%E7%BA%AA%E5%BF%B5%E6%97%A5/
 http://blog.yusite.top/tags/%E5%8E%86%E5%8F%B2/
 http://blog.yusite.top/tags/%E5%92%8C%E5%B9%B3/
 http://blog.yusite.top/categories/%E5%8D%9A%E5%AE%A2%E6%95%99%E7%A8%8B/
 http://blog.yusite.top/categories/%E9%9A%8F%E7%AC%94/
+http://blog.yusite.top/categories/Python/
+http://blog.yusite.top/categories/Python/%E5%B7%A5%E5%85%B7%E6%8E%A8%E8%8D%90/
