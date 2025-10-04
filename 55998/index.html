@@ -27,7 +27,7 @@
       "url": "http://blog.yusite.top"
     }
   ]
-}</script><link rel="shortcut icon" href="/img/avatar.jpg"><link rel="canonical" href="http://blog.yusite.top/55998/"><link rel="preconnect" href="//unpkg.com"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//www.clarity.ms"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free/css/all.min.css"><script>
+}</script><link rel="shortcut icon" href="/img/avatar.jpg"><link rel="canonical" href="http://blog.yusite.top/55998/"><link rel="preconnect" href="//unpkg.com"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free/css/all.min.css"><script>
     (() => {
       
     const saveToLocal = {
@@ -117,21 +117,13 @@
     detectApple()
   
     })()
-  </script><script async="async" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><script>(adsbygoogle = window.adsbygoogle || []).push({
-  google_ad_client: 'ca-pub-4204606001211109',
-  enable_page_level_ads: 'true'
-});</script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-Y3CWPMCLWP"></script><script>window.dataLayer = window.dataLayer || []
+  </script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-Y3CWPMCLWP"></script><script>window.dataLayer = window.dataLayer || []
 function gtag(){dataLayer.push(arguments)}
 gtag('js', new Date())
 gtag('config', 'G-Y3CWPMCLWP')
 btf.addGlobalFn('pjaxComplete', () => {
   gtag('config', 'G-Y3CWPMCLWP', {'page_path': window.location.pathname})
 }, 'google_analytics')
-</script><script>(function(c,l,a,r,i,t,y){
-    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-})(window, document, "clarity", "script", "t6ic92ttub");
 </script><script>const GLOBAL_CONFIG = {
   root: '/',
   algolia: undefined,
@@ -392,4 +384,62 @@ btf.addGlobalFn('pjaxComplete', () => {
         : window.location.href = e.request.responseURL
     }
   })
+})()</script><script>(() => {
+  const option = null
+  const config = {"site_uv":true,"site_pv":true,"page_pv":true,"token":"api_uDnDmzdRX3uJoENIEYdwMdSeZimwjR7F"}
+
+  const runTrack = () => {
+    umami.track(props => ({ ...props, url: window.location.pathname, title: GLOBAL_CONFIG_SITE.title }))
+  }
+
+  const loadUmamiJS = () => {
+    btf.getScript('https://cloud.umami.is/script.js', {
+      'data-website-id': '12bdc38d-75fe-48be-aba1-6a7ccbe4e56e',
+      'data-auto-track': 'false',
+      ...option
+    }).then(runTrack)
+  }
+
+  const getData = async (isPost) => {
+    const now = Date.now()
+    const keyUrl = isPost ? `&url=${window.location.pathname}` : ''
+    const headerList = { 'Accept': 'application/json' }
+    if (true) headerList['Authorization'] = `Bearer ${config.token}`
+    else headerList['x-umami-api-key'] = config.token
+    const res = await fetch(`https://cloud.umami.is/api/websites/12bdc38d-75fe-48be-aba1-6a7ccbe4e56e/stats?startAt=0000000000&endAt=${now}${keyUrl}`, {
+      method: "GET",
+      headers: headerList
+    })
+    return await res.json()
+  }
+
+  const insertData = async () => {
+    try {
+      if (GLOBAL_CONFIG_SITE.pageType === 'post' && config.page_pv) {
+        const pagePV = document.getElementById('umamiPV')
+        if (pagePV) {
+          const data = await getData(true)
+          pagePV.textContent = data.pageviews.value
+        }
+      } else {
+        const data = (config.site_uv || config.site_pv) && await getData()
+        if (config.site_uv) {
+          const siteUV = document.getElementById('umami-site-uv')
+          if (siteUV) siteUV.textContent = data.visitors.value
+        }
+        if (config.site_pv) {
+          const sitePV = document.getElementById('umami-site-pv')
+          if (sitePV) sitePV.textContent = data.pageviews.value
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load Umami Analytics:', e)
+    }
+  }
+
+  btf.addGlobalFn('pjaxComplete', runTrack, 'umami_analytics_run_track')
+  btf.addGlobalFn('pjaxComplete', insertData, 'umami_analytics_insert')
+
+  loadUmamiJS()
+  insertData()
 })()</script><script async data-pjax src="//npm.elemecdn.com/penndu@1.0.0/bsz.js"></script></div></body></html>
