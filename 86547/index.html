@@ -27,7 +27,7 @@
       "url": "http://yu-blog.top"
     }
   ]
-}</script><link rel="shortcut icon" href="/img/avatar.jpg"><link rel="canonical" href="http://yu-blog.top/86547/"><link rel="preconnect" href="//unpkg.com"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//static.cloudflareinsights.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://unpkg.com/@fancyapps/ui/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>
+}</script><link rel="shortcut icon" href="/img/avatar.jpg"><link rel="canonical" href="http://yu-blog.top/86547/"><link rel="preconnect" href="//unpkg.com"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//static.cloudflareinsights.com"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://lib.baomitu.com/font-awesome/7.0.0/css/all.min.css"><link rel="stylesheet" href="https://unpkg.com/@fancyapps/ui/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>
     (() => {
       
     const saveToLocal = {
@@ -263,8 +263,8 @@ btf.addGlobalFn('pjaxComplete', () => {
   const loadWaline = (el, path) => {
     if (initFn) initWaline(initFn, el, path)
     else {
-      btf.getCSS('https://unpkg.com/@waline/client/dist/waline.css')
-        .then(() => import('https://unpkg.com/@waline/client/dist/waline.js'))
+      btf.getCSS('https://unpkg.com/@waline/client@v2/dist/waline.css')
+        .then(() => import('https://unpkg.com/@waline/client@v2/dist/waline.js'))
         .then(({ init }) => {
           initFn = init || Waline.init
           initWaline(initFn, el, path)
@@ -478,4 +478,4 @@ btf.addGlobalFn('pjaxComplete', () => {
 
   loadUmamiJS()
   insertData()
-})()</script><script async data-pjax src="//npm.elemecdn.com/penndu@1.0.0/bsz.js"></script></div></body></html>
+})()</script><script async data-pjax src="https://npm.elemecdn.com/penndu@1.0.0/bsz.js"></script></div></body></html>
