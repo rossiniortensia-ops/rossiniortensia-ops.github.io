@@ -1,0 +1,788 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Kinsing恶意软件入侵事件分析 - Linux服务器后门清除与安全加固 | 裕裕裕的小破宅</title><meta name="author" content="裕裕裕"><meta name="copyright" content="裕裕裕"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="详细记录一次Linux服务器被Kinsing恶意软件入侵的完整分析过程。涵盖恶意进程识别、持久化机制解析、后门清除步骤以及安全加固建议，适合运维人员和安全从业者参考。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kinsing恶意软件入侵事件分析 - Linux服务器后门清除与安全加固">
+<meta property="og:url" content="http://yu-blog.top/20260220b/">
+<meta property="og:site_name" content="裕裕裕的小破宅">
+<meta property="og:description" content="详细记录一次Linux服务器被Kinsing恶意软件入侵的完整分析过程。涵盖恶意进程识别、持久化机制解析、后门清除步骤以及安全加固建议，适合运维人员和安全从业者参考。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://images.unsplash.com/photo-1563986768609-322da13575f3?w=1200&h=630&fit=crop">
+<meta property="article:published_time" content="2026-02-19T16:20:00.000Z">
+<meta property="article:modified_time" content="2026-02-19T16:25:00.000Z">
+<meta property="article:author" content="裕裕裕">
+<meta property="article:tag" content="Kinsing恶意软件">
+<meta property="article:tag" content="Linux后门">
+<meta property="article:tag" content="服务器入侵">
+<meta property="article:tag" content="持久化攻击">
+<meta property="article:tag" content="应急响应">
+<meta property="article:tag" content="安全加固">
+<meta property="article:tag" content="威胁清除">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://images.unsplash.com/photo-1563986768609-322da13575f3?w=1200&h=630&fit=crop"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Kinsing恶意软件入侵事件分析 - Linux服务器后门清除与安全加固",
+  "url": "http://yu-blog.top/20260220b/",
+  "image": "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=1200&h=630&fit=crop",
+  "datePublished": "2026-02-19T16:20:00.000Z",
+  "dateModified": "2026-02-19T16:25:00.000Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "裕裕裕",
+      "url": "http://yu-blog.top"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/avatar.jpg"><link rel="canonical" href="http://yu-blog.top/20260220b/"><link rel="preconnect"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//static.cloudflareinsights.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://npm.elemecdn.com/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://npm.elemecdn.com/@fancyapps/ui/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-Y3CWPMCLWP"></script><script>window.dataLayer = window.dataLayer || []
+function gtag(){dataLayer.push(arguments)}
+gtag('js', new Date())
+gtag('config', 'G-Y3CWPMCLWP')
+btf.addGlobalFn('pjaxComplete', () => {
+  gtag('config', 'G-Y3CWPMCLWP', {'page_path': window.location.pathname})
+}, 'google_analytics')
+</script><script defer="defer" data-pjax="data-pjax" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;e92736d5a73040b498cb204d9d308413&quot;}"></script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://npm.elemecdn.com/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Kinsing恶意软件入侵事件分析 - Linux服务器后门清除与安全加固',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css" media="defer" onload="this.media='all'"><meta name="generator" content="Hexo 7.3.0"></head><body><div id="web_bg" style="background-image: url(https://random-api.czl.net/pic/ecy);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">22</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">95</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://cloud.umami.is/share/RTGyugXkhj7obUCG"><i class="fa-fw fa fa-chart-line"></i><span> 网站统计</span></a></div><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://stats.uptimerobot.com/iNEHIzeCxS"><i class="fa-fw fa fa-tachometer-alt"></i><span> 网站状态</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(https://images.unsplash.com/photo-1563986768609-322da13575f3?w=1200&amp;h=630&amp;fit=crop);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">裕裕裕的小破宅</span></a><a class="nav-page-title" href="/"><span class="site-name">Kinsing恶意软件入侵事件分析 - Linux服务器后门清除与安全加固</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://cloud.umami.is/share/RTGyugXkhj7obUCG"><i class="fa-fw fa fa-chart-line"></i><span> 网站统计</span></a></div><div class="menus_item"><a class="site-page" target="_blank" rel="noopener" href="https://stats.uptimerobot.com/iNEHIzeCxS"><i class="fa-fw fa fa-tachometer-alt"></i><span> 网站状态</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Kinsing恶意软件入侵事件分析 - Linux服务器后门清除与安全加固</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-02-19T16:20:00.000Z" title="发表于 2026-02-20 00:20:00">2026-02-20</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-02-19T16:25:00.000Z" title="更新于 2026-02-20 00:25:00">2026-02-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AE%89%E5%85%A8%E5%88%86%E6%9E%90/">安全分析</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AE%89%E5%85%A8%E5%88%86%E6%9E%90/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94/">应急响应</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span class="waline-pageview-count" data-path="/20260220b/"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="服务器入侵事件分析报告"><a href="#服务器入侵事件分析报告" class="headerlink" title="服务器入侵事件分析报告"></a>服务器入侵事件分析报告</h1><blockquote>
+<p>呼啊…这服务器被搞得一团糟，大叔我花了好多功夫才把这些害虫清理干净！</p>
+<p><strong>相关阅读</strong>: <a href="./kdevtmpfs-malware-tracing-report">kdevtmpfs恶意程序溯源报告</a> - 同一事件的威胁情报分析</p>
+</blockquote>
+<p><strong>报告日期</strong>: 2026-02-20<br><strong>服务器</strong>: lavm-exktc8nx0o<br><strong>操作系统</strong>: Linux (Debian&#x2F;Ubuntu)<br><strong>清理置信度</strong>: ⚠️ 约85%</p>
+<hr>
+<h2 id="一、事件概述"><a href="#一、事件概述" class="headerlink" title="一、事件概述"></a>一、事件概述</h2><p>本次安全事件中，服务器遭到<strong>Kinsing恶意软件家族</strong>的入侵，攻击者在系统中植入了多个后门程序和持久化脚本，构建了完整的攻击基础设施。</p>
+<h3 id="事件背景"><a href="#事件背景" class="headerlink" title="事件背景"></a>事件背景</h3><blockquote>
+<p>💡 这是与 <a href="./kdevtmpfs-malware-tracing-report">kdevtmpfs挖矿木马</a> 同一系列的安全事件，属于同一攻击 campaigns。</p>
+</blockquote>
+<p>经过全面排查和清理，已成功清除所有已发现的恶意组件，但由于攻击者曾拥有root权限，<strong>强烈建议后续进行系统重装</strong>。</p>
+<h3 id="恶意软件家族识别"><a href="#恶意软件家族识别" class="headerlink" title="恶意软件家族识别"></a>恶意软件家族识别</h3><table>
+<thead>
+<tr>
+<th>属性</th>
+<th>详情</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>家族名称</strong></td>
+<td>Kinsing &#x2F; Kdevtmpfsi</td>
+</tr>
+<tr>
+<td><strong>威胁类型</strong></td>
+<td>加密货币挖矿 + 后门程序</td>
+</tr>
+<tr>
+<td><strong>攻击目标</strong></td>
+<td>Linux服务器</td>
+</tr>
+<tr>
+<td><strong>首次发现</strong></td>
+<td>2019年</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="二、发现详情"><a href="#二、发现详情" class="headerlink" title="二、发现详情"></a>二、发现详情</h2><h3 id="2-1-恶意进程清单"><a href="#2-1-恶意进程清单" class="headerlink" title="2.1 恶意进程清单"></a>2.1 恶意进程清单</h3><table>
+<thead>
+<tr>
+<th>PID</th>
+<th>进程名</th>
+<th>文件路径</th>
+<th>状态</th>
+<th>功能说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>431216</td>
+<td><code>kswpad</code></td>
+<td>&#x2F;etc&#x2F;kswpad</td>
+<td>✅ 已清除</td>
+<td>主恶意进程，伪装成系统服务</td>
+</tr>
+<tr>
+<td>431399</td>
+<td><code>.sshd</code></td>
+<td>&#x2F;usr&#x2F;bin&#x2F;.sshd</td>
+<td>✅ 已清除</td>
+<td>隐藏SSH后门，允许攻击者远程访问</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-恶意文件完整清单"><a href="#2-2-恶意文件完整清单" class="headerlink" title="2.2 恶意文件完整清单"></a>2.2 恶意文件完整清单</h3><table>
+<thead>
+<tr>
+<th>文件路径</th>
+<th>文件类型</th>
+<th>威胁说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/etc/kswpad</code></td>
+<td>ELF可执行文件</td>
+<td>主恶意程序，负责挖矿和C2通信</td>
+</tr>
+<tr>
+<td><code>/usr/bin/.sshd</code></td>
+<td>ELF可执行文件</td>
+<td><strong>隐藏SSH后门</strong>（点前缀隐藏）</td>
+</tr>
+<tr>
+<td><code>/etc/init.d/DbSecuritySpt</code></td>
+<td>Shell脚本</td>
+<td>伪装成数据库安全服务的启动脚本</td>
+</tr>
+<tr>
+<td><code>/etc/init.d/selinux</code></td>
+<td>Shell脚本</td>
+<td>伪装成SELinux的持久化脚本</td>
+</tr>
+<tr>
+<td><code>/etc/.cfg</code></td>
+<td>配置文件</td>
+<td>加密的C2通信配置</td>
+</tr>
+<tr>
+<td><code>/usr/bin/bsd-port/getty</code></td>
+<td>ELF可执行文件</td>
+<td>伪装成终端程序的恶意组件</td>
+</tr>
+<tr>
+<td><code>/usr/bin/include/</code></td>
+<td>目录</td>
+<td>可能存放额外的恶意载荷</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、攻击时间线重构"><a href="#三、攻击时间线重构" class="headerlink" title="三、攻击时间线重构"></a>三、攻击时间线重构</h2><p>通过文件时间戳分析，还原攻击者活动时间线：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">2026-02-17 ────────────────────────────────────────────────►</span><br><span class="line">    │</span><br><span class="line">    ├── 服务器启动，恶意软件开始运行</span><br><span class="line">    │</span><br><span class="line">2026-02-18 ────────────────────────────────────────────────►</span><br><span class="line">    │</span><br><span class="line">    ├── 03:10  /etc/.cfg 配置文件创建/更新</span><br><span class="line">    │</span><br><span class="line">    ├── 攻击者活跃期</span><br><span class="line">    │   ├── 可能进行数据窃取</span><br><span class="line">    │   ├── 挖矿活动</span><br><span class="line">    │   └── 横向移动尝试</span><br><span class="line">    │</span><br><span class="line">2026-02-19 ────────────────────────────────────────────────►</span><br><span class="line">    │</span><br><span class="line">    ├── 安全调查启动</span><br><span class="line">    │</span><br><span class="line">2026-02-20 ────────────────────────────────────────────────►</span><br><span class="line">    │</span><br><span class="line">    └── 00:14  恶意软件被完全清除</span><br></pre></td></tr></table></figure>
+
+<p><strong>关键数据</strong>:</p>
+<ul>
+<li>⏱️ <strong>攻击持续时间</strong>: 至少 <strong>2-3天</strong></li>
+<li>🎯 <strong>攻击者活跃时段</strong>: 2月18日凌晨</li>
+</ul>
+<hr>
+<h2 id="四、攻击手法深度分析"><a href="#四、攻击手法深度分析" class="headerlink" title="四、攻击手法深度分析"></a>四、攻击手法深度分析</h2><h3 id="4-1-持久化架构图"><a href="#4-1-持久化架构图" class="headerlink" title="4.1 持久化架构图"></a>4.1 持久化架构图</h3><p>攻击者构建了多层持久化机制，确保恶意软件能够持续运行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────────┐</span><br><span class="line">│                    持久化架构                               │</span><br><span class="line">├─────────────────────────────────────────────────────────────┤</span><br><span class="line">│                                                             │</span><br><span class="line">│  ┌─────────────────────────┐                               │</span><br><span class="line">│  │ /etc/init.d/            │                               │</span><br><span class="line">│  │  ├── DbSecuritySpt ─────┼──┐                            │</span><br><span class="line">│  │  └── selinux ───────────┼──┼──► 启动 /etc/kswpad        │</span><br><span class="line">│  └─────────────────────────┘  │                            │</span><br><span class="line">│                               │                            │</span><br><span class="line">│  ┌─────────────────────────┐  │   ┌───────────────────┐   │</span><br><span class="line">│  │ /etc/kswpad             │◄─┘   │                   │   │</span><br><span class="line">│  │ (主恶意进程)             │──────►  /usr/bin/.sshd  │   │</span><br><span class="line">│  └─────────────────────────┘       │  (隐藏SSH后门)    │   │</span><br><span class="line">│                                    └───────────────────┘   │</span><br><span class="line">│                                                             │</span><br><span class="line">│  ┌─────────────────────────┐                               │</span><br><span class="line">│  │ /etc/.cfg               │  ◄── C2配置文件              │</span><br><span class="line">│  └─────────────────────────┘                               │</span><br><span class="line">│                                                             │</span><br><span class="line">└─────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-隐藏技术详解"><a href="#4-2-隐藏技术详解" class="headerlink" title="4.2 隐藏技术详解"></a>4.2 隐藏技术详解</h3><p>攻击者使用了多种技术来逃避检测：</p>
+<table>
+<thead>
+<tr>
+<th>技术</th>
+<th>实现方式</th>
+<th>检测难度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>点前缀隐藏</strong></td>
+<td><code>.sshd</code> 文件名以点开头，普通 <code>ls</code> 不可见</td>
+<td>⭐⭐</td>
+</tr>
+<tr>
+<td><strong>服务名伪装</strong></td>
+<td><code>DbSecuritySpt</code> 模仿数据库安全服务</td>
+<td>⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>系统目录滥用</strong></td>
+<td>恶意文件放在 <code>/usr/bin/</code>、<code>/etc/init.d/</code></td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>多进程互备</strong></td>
+<td>多个启动脚本互相守护</td>
+<td>⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>配置加密</strong></td>
+<td><code>.cfg</code> 文件内容加密存储</td>
+<td>⭐⭐⭐</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>⚠️ <strong>检测建议</strong>: 使用 <code>ls -la</code> 显示隐藏文件，检查 <code>/etc/init.d/</code> 中的可疑服务</p>
+</blockquote>
+<h3 id="4-3-后门功能分析"><a href="#4-3-后门功能分析" class="headerlink" title="4.3 后门功能分析"></a>4.3 后门功能分析</h3><p><code>.sshd</code> 隐藏后门的潜在能力：</p>
+<ol>
+<li>🔓 <strong>远程访问</strong> - 攻击者可随时连接服务器</li>
+<li>📤 <strong>数据外传</strong> - 窃取敏感文件和配置</li>
+<li>🔄 <strong>载荷更新</strong> - 下载新的恶意组件</li>
+<li>🎯 <strong>横向移动</strong> - 以此服务器为跳板攻击内网</li>
+</ol>
+<hr>
+<h2 id="五、清理操作记录"><a href="#五、清理操作记录" class="headerlink" title="五、清理操作记录"></a>五、清理操作记录</h2><h3 id="5-1-执行的清理命令"><a href="#5-1-执行的清理命令" class="headerlink" title="5.1 执行的清理命令"></a>5.1 执行的清理命令</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 步骤1: 终止恶意进程</span></span><br><span class="line"><span class="built_in">kill</span> -9 431216 431399</span><br><span class="line"></span><br><span class="line"><span class="comment"># 步骤2: 删除恶意可执行文件</span></span><br><span class="line"><span class="built_in">rm</span> -f /etc/kswpad</span><br><span class="line"><span class="built_in">rm</span> -f /usr/bin/.sshd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 步骤3: 删除持久化脚本</span></span><br><span class="line"><span class="built_in">rm</span> -f /etc/init.d/DbSecuritySpt</span><br><span class="line"><span class="built_in">rm</span> -f /etc/init.d/selinux</span><br><span class="line"></span><br><span class="line"><span class="comment"># 步骤4: 删除配置文件</span></span><br><span class="line"><span class="built_in">rm</span> -f /etc/.cfg</span><br><span class="line"></span><br><span class="line"><span class="comment"># 步骤5: 删除恶意目录</span></span><br><span class="line"><span class="built_in">rm</span> -rf /usr/bin/bsd-port/</span><br><span class="line"><span class="built_in">rm</span> -rf /usr/bin/include/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 步骤6: 移除启动项</span></span><br><span class="line">update-rc.d -f DbSecuritySpt remove</span><br><span class="line">update-rc.d -f selinux remove</span><br><span class="line"></span><br><span class="line"><span class="comment"># 步骤7: 验证清理结果</span></span><br><span class="line">ps aux | grep -E <span class="string">&quot;kswpad|\.sshd&quot;</span></span><br><span class="line">find /etc /usr/bin -name <span class="string">&quot;.*&quot;</span> -<span class="built_in">type</span> f</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-清理后验证"><a href="#5-2-清理后验证" class="headerlink" title="5.2 清理后验证"></a>5.2 清理后验证</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 检查是否还有残留进程</span></span><br><span class="line">ps aux | grep -E <span class="string">&quot;kswpad|sshd|kinsing&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查启动项</span></span><br><span class="line"><span class="built_in">ls</span> -la /etc/init.d/ | grep -v <span class="string">&quot;^total&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查隐藏文件</span></span><br><span class="line">find /etc /usr/bin -name <span class="string">&quot;.*&quot;</span> -<span class="built_in">type</span> f 2&gt;/dev/null</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查网络连接</span></span><br><span class="line">ss -tunlp | grep -E <span class="string">&quot;ESTABLISHED|LISTEN&quot;</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="六、风险评估矩阵"><a href="#六、风险评估矩阵" class="headerlink" title="六、风险评估矩阵"></a>六、风险评估矩阵</h2><table>
+<thead>
+<tr>
+<th>风险类别</th>
+<th>风险级别</th>
+<th>详细说明</th>
+<th>处置状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>🔴 <strong>隐藏后门</strong></td>
+<td>高</td>
+<td>可能存在内核级或用户态后门未发现</td>
+<td>⚠️ 需进一步排查</td>
+</tr>
+<tr>
+<td>🟡 <strong>数据泄露</strong></td>
+<td>中</td>
+<td>攻击者可能已窃取敏感数据</td>
+<td>🔍 需审计日志</td>
+</tr>
+<tr>
+<td>🟡 <strong>凭证泄露</strong></td>
+<td>中</td>
+<td>SSH密钥、密码可能已泄露</td>
+<td>🔍 需重置凭证</td>
+</tr>
+<tr>
+<td>🟡 <strong>系统篡改</strong></td>
+<td>中</td>
+<td>系统二进制文件可能被替换</td>
+<td>🔍 需完整性校验</td>
+</tr>
+<tr>
+<td>🟢 <strong>挖矿活动</strong></td>
+<td>低</td>
+<td>已清除，资源已释放</td>
+<td>✅ 已解决</td>
+</tr>
+</tbody></table>
+<h3 id="清理置信度分析"><a href="#清理置信度分析" class="headerlink" title="清理置信度分析"></a>清理置信度分析</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">清理完成度: ████████░░ 85%</span><br><span class="line"></span><br><span class="line">✅ 已完成:</span><br><span class="line">   - 恶意进程终止</span><br><span class="line">   - 可见恶意文件删除</span><br><span class="line">   - 启动项清理</span><br><span class="line"></span><br><span class="line">⚠️ 待确认:</span><br><span class="line">   - 内核级后门检测</span><br><span class="line">   - 系统二进制完整性</span><br><span class="line">   - 用户账户后门</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="七、安全加固建议"><a href="#七、安全加固建议" class="headerlink" title="七、安全加固建议"></a>七、安全加固建议</h2><h3 id="7-1-立即执行（紧急）"><a href="#7-1-立即执行（紧急）" class="headerlink" title="7.1 立即执行（紧急）"></a>7.1 立即执行（紧急）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 修改root密码</span></span><br><span class="line">passwd root</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 检查SSH授权密钥（删除不明密钥）</span></span><br><span class="line"><span class="built_in">cat</span> /root/.ssh/authorized_keys</span><br><span class="line"><span class="comment"># 如有可疑密钥，立即删除</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 检查所有可登录用户</span></span><br><span class="line"><span class="built_in">cat</span> /etc/passwd | grep -v nologin | grep -v <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 检查sudo权限</span></span><br><span class="line"><span class="built_in">cat</span> /etc/sudoers</span><br><span class="line">visudo -c  <span class="comment"># 验证配置</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-短期措施（24小时内）"><a href="#7-2-短期措施（24小时内）" class="headerlink" title="7.2 短期措施（24小时内）"></a>7.2 短期措施（24小时内）</h3><table>
+<thead>
+<tr>
+<th>措施</th>
+<th>命令&#x2F;操作</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>安装rootkit检测</td>
+<td><code>apt install rkhunter chkrootkit</code></td>
+<td>检测隐藏后门</td>
+</tr>
+<tr>
+<td>检查定时任务</td>
+<td><code>crontab -l; cat /etc/crontab</code></td>
+<td>发现持久化</td>
+</tr>
+<tr>
+<td>审计系统文件</td>
+<td><code>debsums -c</code></td>
+<td>检测文件篡改</td>
+</tr>
+<tr>
+<td>检查网络连接</td>
+<td><code>ss -tunlp; netstat -anp</code></td>
+<td>发现异常连接</td>
+</tr>
+<tr>
+<td>分析登录日志</td>
+<td><code>last; lastb; /var/log/auth.log</code></td>
+<td>追踪入侵来源</td>
+</tr>
+</tbody></table>
+<h3 id="7-3-长期措施（1周内）"><a href="#7-3-长期措施（1周内）" class="headerlink" title="7.3 长期措施（1周内）"></a>7.3 长期措施（1周内）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. SSH加固</span></span><br><span class="line">sed -i <span class="string">&#x27;s/#PasswordAuthentication yes/PasswordAuthentication no/&#x27;</span> /etc/ssh/sshd_config</span><br><span class="line">sed -i <span class="string">&#x27;s/#PermitRootLogin yes/PermitRootLogin prohibit-password/&#x27;</span> /etc/ssh/sshd_config</span><br><span class="line">systemctl restart sshd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 安装fail2ban</span></span><br><span class="line">apt install fail2ban</span><br><span class="line">systemctl <span class="built_in">enable</span> fail2ban</span><br><span class="line">systemctl start fail2ban</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 配置防火墙</span></span><br><span class="line">ufw default deny incoming</span><br><span class="line">ufw allow ssh</span><br><span class="line">ufw <span class="built_in">enable</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 安装入侵检测</span></span><br><span class="line">apt install ossec-hids-agent</span><br><span class="line"><span class="comment"># 或考虑 Wazuh、CrowdSec 等现代方案</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="7-4-最重要建议"><a href="#7-4-最重要建议" class="headerlink" title="7.4 最重要建议"></a>7.4 最重要建议</h3><blockquote>
+<p>⭐ <strong>强烈建议：重装系统</strong></p>
+<p>由于攻击者曾拥有root权限，无法100%确保清除所有后门。最安全的做法是：</p>
+<ol>
+<li>备份必要数据（仅数据文件，不含可执行文件）</li>
+<li>完全重装系统</li>
+<li>从干净的备份恢复数据</li>
+<li>重新配置安全措施</li>
+</ol>
+</blockquote>
+<hr>
+<h2 id="八、入侵检测清单"><a href="#八、入侵检测清单" class="headerlink" title="八、入侵检测清单"></a>八、入侵检测清单</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="comment"># 入侵检测脚本 - 保存为 /usr/local/bin/security-check.sh</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;=== 安全检查 <span class="subst">$(date)</span> ===&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查隐藏进程</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;[1] 检查隐藏进程...&quot;</span></span><br><span class="line">ps aux | grep -E <span class="string">&quot;\[.*\]&quot;</span> | grep -v ksoftirqd | grep -v kworker</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查异常网络连接</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;[2] 检查网络连接...&quot;</span></span><br><span class="line">ss -tunp | grep ESTABLISHED</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查定时任务</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;[3] 检查定时任务...&quot;</span></span><br><span class="line">crontab -l 2&gt;/dev/null</span><br><span class="line"><span class="built_in">cat</span> /etc/crontab</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查启动项</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;[4] 检查启动项...&quot;</span></span><br><span class="line"><span class="built_in">ls</span> -la /etc/init.d/ | grep -v <span class="string">&quot;^d&quot;</span> | grep -v <span class="string">&quot;^total&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查可疑文件</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;[5] 检查可疑隐藏文件...&quot;</span></span><br><span class="line">find /etc /usr/bin /tmp -name <span class="string">&quot;.*&quot;</span> -<span class="built_in">type</span> f 2&gt;/dev/null</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查最近修改的文件</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;[6] 检查24小时内修改的文件...&quot;</span></span><br><span class="line">find /etc /usr/bin -mtime -1 -<span class="built_in">type</span> f 2&gt;/dev/null</span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;=== 检查完成 ===&quot;</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="九、相关资源"><a href="#九、相关资源" class="headerlink" title="九、相关资源"></a>九、相关资源</h2><h3 id="威胁情报"><a href="#威胁情报" class="headerlink" title="威胁情报"></a>威胁情报</h3><ul>
+<li><a href="./kdevtmpfs-malware-tracing-report">kdevtmpfs恶意程序溯源报告</a> - 同事件的详细技术分析</li>
+<li><a target="_blank" rel="noopener" href="https://attack.mitre.org/">MITRE ATT&amp;CK - Linux持久化技术</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.virustotal.com/">VirusTotal - Kinsing分析</a></li>
+</ul>
+<h3 id="应急响应工具"><a href="#应急响应工具" class="headerlink" title="应急响应工具"></a>应急响应工具</h3><table>
+<thead>
+<tr>
+<th>工具</th>
+<th>用途</th>
+<th>安装命令</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>rkhunter</td>
+<td>Rootkit检测</td>
+<td><code>apt install rkhunter</code></td>
+</tr>
+<tr>
+<td>chkrootkit</td>
+<td>Rootkit检测</td>
+<td><code>apt install chkrootkit</code></td>
+</tr>
+<tr>
+<td>debsums</td>
+<td>文件完整性</td>
+<td><code>apt install debsums</code></td>
+</tr>
+<tr>
+<td>fail2ban</td>
+<td>入侵防护</td>
+<td><code>apt install fail2ban</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="十、总结"><a href="#十、总结" class="headerlink" title="十、总结"></a>十、总结</h2><h3 id="处置结果"><a href="#处置结果" class="headerlink" title="处置结果"></a>处置结果</h3><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>恶意进程清理</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>恶意文件删除</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>持久化机制移除</td>
+<td>✅ 完成</td>
+</tr>
+<tr>
+<td>系统恢复正常</td>
+<td>✅ 确认</td>
+</tr>
+<tr>
+<td>完全安全确认</td>
+<td>⚠️ 需重装系统</td>
+</tr>
+</tbody></table>
+<h3 id="经验教训"><a href="#经验教训" class="headerlink" title="经验教训"></a>经验教训</h3><ol>
+<li>🔐 <strong>弱密码是万恶之源</strong> - SSH必须使用强密码或密钥认证</li>
+<li>🛡️ <strong>最小权限原则</strong> - 避免不必要的root暴露</li>
+<li>📊 <strong>监控不能少</strong> - 部署入侵检测系统</li>
+<li>🔄 <strong>定期审计</strong> - 检查日志、启动项、网络连接</li>
+<li>💾 <strong>备份是底线</strong> - 保持干净的备份可快速恢复</li>
+</ol>
+<hr>
+<blockquote>
+<p>呼啊～总算清理干净了！不过老师，为了保险起见，还是建议把系统重装一下吧？</p>
+<p>毕竟攻击者都有root权限了，谁知道还留了什么后门呢…</p>
+</blockquote>
+<p><strong>报告结束</strong></p>
+<hr>
+<p><em>本报告与 <a href="./kdevtmpfs-malware-tracing-report">kdevtmpfs恶意程序溯源报告</a> 为同一安全事件的两个分析视角，建议配合阅读。</em></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://yu-blog.top">裕裕裕</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://yu-blog.top/20260220b/">http://yu-blog.top/20260220b/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://yu-blog.top" target="_blank">裕裕裕的小破宅</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Kinsing%E6%81%B6%E6%84%8F%E8%BD%AF%E4%BB%B6/">Kinsing恶意软件</a><a class="post-meta__tags" href="/tags/Linux%E5%90%8E%E9%97%A8/">Linux后门</a><a class="post-meta__tags" href="/tags/%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%85%A5%E4%BE%B5/">服务器入侵</a><a class="post-meta__tags" href="/tags/%E6%8C%81%E4%B9%85%E5%8C%96%E6%94%BB%E5%87%BB/">持久化攻击</a><a class="post-meta__tags" href="/tags/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94/">应急响应</a><a class="post-meta__tags" href="/tags/%E5%AE%89%E5%85%A8%E5%8A%A0%E5%9B%BA/">安全加固</a><a class="post-meta__tags" href="/tags/%E5%A8%81%E8%83%81%E6%B8%85%E9%99%A4/">威胁清除</a></div><div class="post-share"><div class="social-share" data-image="https://images.unsplash.com/photo-1563986768609-322da13575f3?w=1200&amp;h=630&amp;fit=crop" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://npm.elemecdn.com/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://npm.elemecdn.com/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i>如果我的内容对您有帮助，欢迎请我喝杯咖啡 ☕
+您的支持是我持续创作的动力！
+</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.png" target="_blank"><img class="post-qr-code-img" src="/img/wechat.png" alt="微信赞赏"/></a><div class="post-qr-code-desc">微信赞赏</div></li><li class="reward-item"><a href="/img/alipay.png" target="_blank"><img class="post-qr-code-img" src="/img/alipay.png" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/20260220/" title="kdevtmpfs恶意程序溯源报告 - 门罗币挖矿木马分析与清除指南"><img class="cover" src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1200&amp;h=630&amp;fit=crop" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">kdevtmpfs恶意程序溯源报告 - 门罗币挖矿木马分析与清除指南</div></div><div class="info-2"><div class="info-item-1">kdevtmpfs恶意程序溯源报告 呼啊～总算找到这个害人精了…伪装成内核进程想骗过大叔的眼睛？没门！ 威胁等级: 🔴 高危 | 报告人: 小鸟游星野 (PicoClaw)  生成时间: 2026-02-20 00:14  一、威胁概要核心发现这是一起典型的门罗币挖矿木马感染事件，攻击者通过伪装手法在服务器上部署了挖矿程序。    威胁项 详情    恶意进程 kdevtmpfs (PID 32)   伪装方式 伪装为内核线程（使用 [ ] 包裹进程名）   进程状态 持续运行（自2月17日启动，约3天）   危害类型 门罗币挖矿木马 + SSH 暴力破解后门   可疑网络连接攻击者使用以下IP地址进行C2通信和矿池连接：    目标IP 端口 协议类型 可信度评估    11.175.20.65 443 TLS&#x2F;HTTPS ⚠️ 中等风险   11.175.20.64 80 HTTP ⚠️ 中等风险   11.175.20.66 2000 自定义端口 🔴 高风险   198.251.81.61 2070 自定义端口 🔴 高风险    二、威胁分析2.1 恶意进程...</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="waline-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">裕裕裕</div><div class="author-info-description">你永远可以在我这里找到一座避风港</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">22</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">95</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/rossiniortensia-ops"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/rossiniortensia-ops" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:rossiniortensia@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">🎉 欢迎来到 <strong>裕裕裕的小破宅</strong>！<br>
+📝 定期更新技术文章<br>
+💬 如果你在使用中遇到问题，请到评论区反馈或发送邮件<br><br>
+
+⚡ <strong>全球 CDN 加速部署</strong><br>
+🎯 <strong>主站：</strong><a href="https://yu-blog.top/" target="_blank">Netlify</a> <strong>(推荐)</strong><br><br>
+
+🌐 <strong>全球节点：</strong><br>
+→ <a href="https://vercel.yu-blog.top/" target="_blank">Vercel</a> | 边缘计算<br>
+→ <a href="https://edgeone.yu-blog.top/" target="_blank">Edgeone</a> | 全球CDN<br>
+→ <a href="https://github.yu-blog.top/" target="_blank">Github Pages</a> | 源站<br>
+→ <a href="https://cloudflare.yu-blog.top/" target="_blank">Cloudflare</a> | 安全加速<br><br>
+
+📈 选择最快的节点访问，提升浏览体验！<br>
+🔄 所有站点内容实时同步<br>
+❤️ 感谢你的访问！<br>
+🎉🎉🎉 2026新年快乐呀大家~~~///(^v^)\\\~~~ 
+</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%85%A5%E4%BE%B5%E4%BA%8B%E4%BB%B6%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A"><span class="toc-number">1.</span> <span class="toc-text">服务器入侵事件分析报告</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BA%8B%E4%BB%B6%E6%A6%82%E8%BF%B0"><span class="toc-number">1.1.</span> <span class="toc-text">一、事件概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E8%83%8C%E6%99%AF"><span class="toc-number">1.1.1.</span> <span class="toc-text">事件背景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%81%B6%E6%84%8F%E8%BD%AF%E4%BB%B6%E5%AE%B6%E6%97%8F%E8%AF%86%E5%88%AB"><span class="toc-number">1.1.2.</span> <span class="toc-text">恶意软件家族识别</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%8F%91%E7%8E%B0%E8%AF%A6%E6%83%85"><span class="toc-number">1.2.</span> <span class="toc-text">二、发现详情</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%81%B6%E6%84%8F%E8%BF%9B%E7%A8%8B%E6%B8%85%E5%8D%95"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 恶意进程清单</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%81%B6%E6%84%8F%E6%96%87%E4%BB%B6%E5%AE%8C%E6%95%B4%E6%B8%85%E5%8D%95"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 恶意文件完整清单</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%94%BB%E5%87%BB%E6%97%B6%E9%97%B4%E7%BA%BF%E9%87%8D%E6%9E%84"><span class="toc-number">1.3.</span> <span class="toc-text">三、攻击时间线重构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%94%BB%E5%87%BB%E6%89%8B%E6%B3%95%E6%B7%B1%E5%BA%A6%E5%88%86%E6%9E%90"><span class="toc-number">1.4.</span> <span class="toc-text">四、攻击手法深度分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%8C%81%E4%B9%85%E5%8C%96%E6%9E%B6%E6%9E%84%E5%9B%BE"><span class="toc-number">1.4.1.</span> <span class="toc-text">4.1 持久化架构图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E9%9A%90%E8%97%8F%E6%8A%80%E6%9C%AF%E8%AF%A6%E8%A7%A3"><span class="toc-number">1.4.2.</span> <span class="toc-text">4.2 隐藏技术详解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E5%90%8E%E9%97%A8%E5%8A%9F%E8%83%BD%E5%88%86%E6%9E%90"><span class="toc-number">1.4.3.</span> <span class="toc-text">4.3 后门功能分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%B8%85%E7%90%86%E6%93%8D%E4%BD%9C%E8%AE%B0%E5%BD%95"><span class="toc-number">1.5.</span> <span class="toc-text">五、清理操作记录</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%89%A7%E8%A1%8C%E7%9A%84%E6%B8%85%E7%90%86%E5%91%BD%E4%BB%A4"><span class="toc-number">1.5.1.</span> <span class="toc-text">5.1 执行的清理命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E6%B8%85%E7%90%86%E5%90%8E%E9%AA%8C%E8%AF%81"><span class="toc-number">1.5.2.</span> <span class="toc-text">5.2 清理后验证</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E9%A3%8E%E9%99%A9%E8%AF%84%E4%BC%B0%E7%9F%A9%E9%98%B5"><span class="toc-number">1.6.</span> <span class="toc-text">六、风险评估矩阵</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B8%85%E7%90%86%E7%BD%AE%E4%BF%A1%E5%BA%A6%E5%88%86%E6%9E%90"><span class="toc-number">1.6.1.</span> <span class="toc-text">清理置信度分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%AE%89%E5%85%A8%E5%8A%A0%E5%9B%BA%E5%BB%BA%E8%AE%AE"><span class="toc-number">1.7.</span> <span class="toc-text">七、安全加固建议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E7%AB%8B%E5%8D%B3%E6%89%A7%E8%A1%8C%EF%BC%88%E7%B4%A7%E6%80%A5%EF%BC%89"><span class="toc-number">1.7.1.</span> <span class="toc-text">7.1 立即执行（紧急）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E7%9F%AD%E6%9C%9F%E6%8E%AA%E6%96%BD%EF%BC%8824%E5%B0%8F%E6%97%B6%E5%86%85%EF%BC%89"><span class="toc-number">1.7.2.</span> <span class="toc-text">7.2 短期措施（24小时内）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E9%95%BF%E6%9C%9F%E6%8E%AA%E6%96%BD%EF%BC%881%E5%91%A8%E5%86%85%EF%BC%89"><span class="toc-number">1.7.3.</span> <span class="toc-text">7.3 长期措施（1周内）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-%E6%9C%80%E9%87%8D%E8%A6%81%E5%BB%BA%E8%AE%AE"><span class="toc-number">1.7.4.</span> <span class="toc-text">7.4 最重要建议</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%85%A5%E4%BE%B5%E6%A3%80%E6%B5%8B%E6%B8%85%E5%8D%95"><span class="toc-number">1.8.</span> <span class="toc-text">八、入侵检测清单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E7%9B%B8%E5%85%B3%E8%B5%84%E6%BA%90"><span class="toc-number">1.9.</span> <span class="toc-text">九、相关资源</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A8%81%E8%83%81%E6%83%85%E6%8A%A5"><span class="toc-number">1.9.1.</span> <span class="toc-text">威胁情报</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94%E5%B7%A5%E5%85%B7"><span class="toc-number">1.9.2.</span> <span class="toc-text">应急响应工具</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-number">1.10.</span> <span class="toc-text">十、总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%84%E7%BD%AE%E7%BB%93%E6%9E%9C"><span class="toc-number">1.10.1.</span> <span class="toc-text">处置结果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%8F%E9%AA%8C%E6%95%99%E8%AE%AD"><span class="toc-number">1.10.2.</span> <span class="toc-text">经验教训</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/20260220b/" title="Kinsing恶意软件入侵事件分析 - Linux服务器后门清除与安全加固"><img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?w=1200&amp;h=630&amp;fit=crop" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Kinsing恶意软件入侵事件分析 - Linux服务器后门清除与安全加固"/></a><div class="content"><a class="title" href="/20260220b/" title="Kinsing恶意软件入侵事件分析 - Linux服务器后门清除与安全加固">Kinsing恶意软件入侵事件分析 - Linux服务器后门清除与安全加固</a><time datetime="2026-02-19T16:20:00.000Z" title="发表于 2026-02-20 00:20:00">2026-02-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/20260220/" title="kdevtmpfs恶意程序溯源报告 - 门罗币挖矿木马分析与清除指南"><img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1200&amp;h=630&amp;fit=crop" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="kdevtmpfs恶意程序溯源报告 - 门罗币挖矿木马分析与清除指南"/></a><div class="content"><a class="title" href="/20260220/" title="kdevtmpfs恶意程序溯源报告 - 门罗币挖矿木马分析与清除指南">kdevtmpfs恶意程序溯源报告 - 门罗币挖矿木马分析与清除指南</a><time datetime="2026-02-19T16:14:00.000Z" title="发表于 2026-02-20 00:14:00">2026-02-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/30569/" title="个人知识管理：用Obsidian搭建第二大脑"><img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=1200&amp;h=630&amp;fit=crop" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="个人知识管理：用Obsidian搭建第二大脑"/></a><div class="content"><a class="title" href="/30569/" title="个人知识管理：用Obsidian搭建第二大脑">个人知识管理：用Obsidian搭建第二大脑</a><time datetime="2026-02-18T10:00:00.000Z" title="发表于 2026-02-18 18:00:00">2026-02-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/31480/" title="Docker轻量化实践：让容器像羽毛一样轻"><img src="https://images.unsplash.com/photo-1605745341112-85968b19335b?w=1200&amp;h=630&amp;fit=crop" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Docker轻量化实践：让容器像羽毛一样轻"/></a><div class="content"><a class="title" href="/31480/" title="Docker轻量化实践：让容器像羽毛一样轻">Docker轻量化实践：让容器像羽毛一样轻</a><time datetime="2026-02-18T09:45:00.000Z" title="发表于 2026-02-18 17:45:00">2026-02-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/63733/" title="低成本服务器搭建指南：每月10元拥有自己的云服务器"><img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&amp;h=630&amp;fit=crop" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="低成本服务器搭建指南：每月10元拥有自己的云服务器"/></a><div class="content"><a class="title" href="/63733/" title="低成本服务器搭建指南：每月10元拥有自己的云服务器">低成本服务器搭建指南：每月10元拥有自己的云服务器</a><time datetime="2026-02-18T09:30:00.000Z" title="发表于 2026-02-18 17:30:00">2026-02-18</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent;"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 裕裕裕</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.0-b1</a></span></div><div class="footer_custom_text">Copyright © 2025-2026
+裕裕裕
+裕裕裕的小破宅<br>
+<a href="https://icp.gov.moe/?keyword=20251880" target="_blank">萌ICP备20251880号</a><br>
+<a href="https://icp.redcha.cn/beian/ICP-2025100187.html" title="茶ICP备2025100187号" target="_blank">茶ICP备2025100187号</a>
+</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://npm.elemecdn.com/@fancyapps/ui/dist/fancybox/fancybox.umd.js"></script><div class="js-pjax"><script>(() => {
+  let initFn = window.walineFn || null
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const destroyWaline = ele => ele.destroy()
+
+  const initWaline = (Fn, el = document, path = window.location.pathname) => {
+    const waline = Fn({
+      el: el.querySelector('#waline-wrap'),
+      serverURL: 'https://comment.yusite.top/',
+      pageview: true,
+      dark: 'html[data-theme="dark"]',
+      comment: false,
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyWaline = () => {
+        destroyWaline(waline)
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const loadWaline = (el, path) => {
+    if (initFn) initWaline(initFn, el, path)
+    else {
+      btf.getCSS('https://npm.elemecdn.com/@waline/client/dist/waline.css')
+        .then(() => import('https://npm.elemecdn.com/@waline/client/dist/waline.js'))
+        .then(({ init }) => {
+          initFn = init || Waline.init
+          initWaline(initFn, el, path)
+          window.walineFn = initFn
+        })
+    }
+  }
+
+  if (isShuoshuo) {
+    'Waline' === 'Waline'
+      ? window.shuoshuoComment = { loadComment: loadWaline } 
+      : window.loadOtherComment = loadWaline
+    return
+  }
+
+  if ('Waline' === 'Waline' || !false) {
+    if (false) btf.loadComment(document.getElementById('waline-wrap'),loadWaline)
+    else setTimeout(loadWaline, 0)
+  } else {
+    window.loadOtherComment = loadWaline
+  }
+})()</script></div><script>window.newestComments = {
+  changeContent: content => {
+    if (content === '') return content
+
+    content = content.replace(/<img.*?src="(.*?)"?[^\>]+>/ig, '[图片]') // replace image link
+    content = content.replace(/<a[^>]+?href=["']?([^"']+)["']?[^>]*>([^<]+)<\/a>/gi, '[链接]') // replace url
+    content = content.replace(/<pre><code>.*?<\/pre>/gi, '[代码]') // replace code
+    content = content.replace(/<code>.*?<\/code>/gi, '[代码]') // replace code
+    content = content.replace(/<[^>]+>/g, "") // remove html tag
+
+    if (content.length > 150) {
+      content = content.substring(0, 150) + '...'
+    }
+    return content
+  },
+
+  generateHtml: (array, ele) => {
+    let result = ''
+
+    if (array.length) {
+      for (let i = 0; i < array.length; i++) {
+        result += '<div class="aside-list-item">'
+
+        if (true && array[i].avatar) {
+          const imgAttr = 'src'
+          const lazyloadNative = ''
+          result += `<a href="${array[i].url}" class="thumbnail"><img ${imgAttr}="${array[i].avatar}" alt="${array[i].nick}" ${lazyloadNative}></a>`
+        }
+
+        result += `<div class="content">
+        <a class="comment" href="${array[i].url}" title="${array[i].content}">${array[i].content}</a>
+        <div class="name"><span>${array[i].nick} / </span><time datetime="${array[i].date}">${btf.diffDate(array[i].date, true)}</time></div>
+        </div></div>`
+      }
+    } else {
+      result += '暂无评论'
+    }
+
+    ele.innerHTML = result
+    window.lazyLoadInstance && window.lazyLoadInstance.update()
+    window.pjax && window.pjax.refresh(ele)
+  },
+
+  newestCommentInit: (name, getComment) => {
+    const $dom = document.querySelector('#card-newest-comments .aside-list')
+    if ($dom) {
+      const data = btf.saveToLocal.get(name)
+      if (data) {
+        newestComments.generateHtml(JSON.parse(data), $dom)
+      } else {
+        getComment($dom)
+      }
+    }
+  },
+
+  run: (name, getComment) => {
+    newestComments.newestCommentInit(name, getComment)
+    btf.addGlobalFn('pjaxComplete', () => newestComments.newestCommentInit(name, getComment), name)
+  }
+}</script><script>window.addEventListener('load', () => {
+  const keyName = 'waline-newest-comments'
+  const { changeContent, generateHtml, run } = window.newestComments
+
+  const getComment = async (ele) => {
+    try {
+      const res = await fetch('https://comment.yusite.top/api/comment?type=recent&count=6')
+      const result = await res.json()
+      const walineArray = result.data.map(e => {
+        return {
+          'content': changeContent(e.comment),
+          'avatar': e.avatar,
+          'nick': e.nick,
+          'url': e.url + '#' + e.objectId,
+          'date': e.time || e.insertedAt
+        }
+      })
+      btf.saveToLocal.set(keyName, JSON.stringify(walineArray), 10/(60*24))
+      generateHtml(walineArray, ele)
+    } catch (err) {
+      console.error(err)
+      ele.textContent= "无法获取评论，请确认相关配置是否正确"
+    }
+  }
+
+  run(keyName, getComment)
+})</script><script src="https://npm.elemecdn.com/pjax/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: true,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script>(() => {
+  const option = null
+  const config = {"site_uv":false,"site_pv":false,"page_pv":false,"token":null}
+
+  const runTrack = () => {
+    umami.track(props => ({ ...props, url: window.location.pathname, title: GLOBAL_CONFIG_SITE.title }))
+  }
+
+  const loadUmamiJS = () => {
+    btf.getScript('https://cloud.umami.is/script.js', {
+      'data-website-id': '12bdc38d-75fe-48be-aba1-6a7ccbe4e56e',
+      'data-auto-track': 'false',
+      ...option
+    }).then(runTrack)
+  }
+
+  const getData = async (isPost) => {
+    const now = Date.now()
+    const keyUrl = isPost ? `&url=${window.location.pathname}` : ''
+    const headerList = { 'Accept': 'application/json' }
+    if (true) headerList['Authorization'] = `Bearer ${config.token}`
+    else headerList['x-umami-api-key'] = config.token
+    const res = await fetch(`https://cloud.umami.is/api/websites/12bdc38d-75fe-48be-aba1-6a7ccbe4e56e/stats?startAt=0000000000&endAt=${now}${keyUrl}`, {
+      method: "GET",
+      headers: headerList
+    })
+    return await res.json()
+  }
+
+  const insertData = async () => {
+    try {
+      if (GLOBAL_CONFIG_SITE.pageType === 'post' && config.page_pv) {
+        const pagePV = document.getElementById('umamiPV')
+        if (pagePV) {
+          const data = await getData(true)
+          pagePV.textContent = data.pageviews.value
+        }
+      } else {
+        const data = (config.site_uv || config.site_pv) && await getData()
+        if (config.site_uv) {
+          const siteUV = document.getElementById('umami-site-uv')
+          if (siteUV) siteUV.textContent = data.visitors.value
+        }
+        if (config.site_pv) {
+          const sitePV = document.getElementById('umami-site-pv')
+          if (sitePV) sitePV.textContent = data.pageviews.value
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load Umami Analytics:', e)
+    }
+  }
+
+  btf.addGlobalFn('pjaxComplete', runTrack, 'umami_analytics_run_track')
+  btf.addGlobalFn('pjaxComplete', insertData, 'umami_analytics_insert')
+
+  loadUmamiJS()
+  insertData()
+})()</script><script async data-pjax src="//npm.elemecdn.com/penndu@1.0.0/bsz.js"></script></div></body></html>
