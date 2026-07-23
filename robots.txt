@@ -1,0 +1,11 @@
+User-agent: *
+   Allow: /
+   Disallow: /page/
+   Disallow: /archives/
+   Disallow: /tags/
+
+   User-agent: bingbot
+   Allow: /
+   Crawl-delay: 1
+
+   Sitemap: https://yu-blog.top/sitemap.xml
