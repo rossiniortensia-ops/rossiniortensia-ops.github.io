@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs ls -lh:*)",
+      "Bash(sort:*)",
+      "Bash(curl:*)",
+      "Bash(node --version:*)",
+      "Bash(npm:*)",
+      "Bash(npx playwright install:*)",
+      "Bash(node:*)",
+      "WebSearch",
+      "WebFetch(domain:waline.js.org)",
+      "mcp__zread__search_doc",
+      "Bash(gh api repos/waline/waline/releases/latest --jq \".tag_name,.body\")",
+      "mcp__zread__get_repo_structure",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\(''tag_name'',''N/A''\\), d.get\\(''body'',''''\\)[:500]\\)\")",
+      "Bash(grep:*)",
+      "Bash(pkill:*)",
+      "Bash(pkill -f \"node.*4000\")",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)"
+    ]
+  }
+}

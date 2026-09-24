@@ -1,0 +1,17 @@
+# Custom head content for Umami analytics integration
+# This file will be automatically included in the HTML head section
+
+# Umami Analytics Script
+# Only loads if Umami is enabled in theme config
+umami: |
+  <% if (theme.plugins && theme.plugins.umami && theme.plugins.umami.enable) { %>
+  <script 
+    async 
+    defer 
+    data-website-id="<%= theme.plugins.umami.website_id %>" 
+    <% if (theme.plugins.umami.data_domains) { %>data-domains="<%= theme.plugins.umami.data_domains %>"<% } %>
+    <% if (theme.plugins.umami.data_auto_track !== undefined) { %>data-auto-track="<%= theme.plugins.umami.data_auto_track %>"<% } %>
+    <% if (theme.plugins.umami.data_do_not_track) { %>data-do-not-track="true"<% } %>
+    src="<%= theme.plugins.umami.src %>">
+  </script>
+  <% } %>

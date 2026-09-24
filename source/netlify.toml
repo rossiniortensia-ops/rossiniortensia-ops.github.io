@@ -1,0 +1,4 @@
+[[redirects]]
+  from = "https://blog.yusite.top/*"
+  to = "https://yu-blog.top/:splat"
+  force = true

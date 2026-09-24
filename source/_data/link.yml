@@ -1,0 +1,57 @@
+- class_name: 友情链接
+  class_desc: 要友链的可下方评论
+  link_list:
+    - name: Hexo
+      link: https://hexo.io/zh-tw/
+      avatar: https://d33wubrfki0l68.cloudfront.net/6657ba50e702d84afb32fe846bed54fba1a77add/827ae/logo.svg
+      descr: 快速、简单且强大的网志框架
+    - name: 二叉树树
+      link: https://2x.nz/
+      avatar: https://q2.qlogo.cn/headimg_dl?dst_uin=2726730791&spec=0
+      descr: 一个高质量的个人技术博客，以实用性强、技术深度足、个人见解独特为特色，是技术学习和实践的优质资源
+    - name: 辰渊尘の个人博客
+      link: https://blog.mcxiaochen.top/
+      avatar: https://blog.mcxiaochen.top/favicon.ico
+      descr: 05后，高中生，内容偏技术向，希望能对你有用QwQ
+      siteshot: https://image.thum.io/get/width/400/crop/800/allowJPG/wait/20/anheyu.com/https://blog.mcxiaochen.top/
+    - name: mccsjs
+      link: https://seln.cn/
+      avatar: https://mccsjs.eu.org/img/head.jpg
+      descr: 素敵な一日が始まります🎉🎉🎉
+      siteshot: https://mccsjs.eu.org/img/a.jpg
+    - name: 张恒华
+      link: https://zhh2001.github.io
+      avatar: https://zhh2001.github.io/avatar.jpg
+      descr: SDN研究者
+    - name: 张洪Heo
+      link: https://blog.zhheo.com/
+      avatar: https://img.zhheo.com/i/67d8fa75943e4.webp
+      descr: 分享设计与科技生活
+    - name: 安知鱼
+      link: https://blog.anheyu.com/
+      avatar: https://npm.elemecdn.com/anzhiyu-blog-static@1.0.4/img/avatar.jpg
+      descr: 生活明朗，万物可爱
+    - name: CcoMm
+      link: https://blog.ccomm.top/
+      avatar: https://avatars.githubusercontent.com/u/147143261
+      descr: 你要吃C4吗？
+    - name: 阿叶Ayeez的小站
+      link: https://blog.Ayeez.cn
+      avatar: https://qiniu.ayeez.cn/avatar.jpg
+      descr: 记录学习历程，记录美好生活
+    - name: 可达鸭战神の博客
+      link: https://blog.kdyzs.top
+      avatar: https://blog.kdyzs.top/img/butterfly-icon.png
+      descr: Good morning. And in case I don’t see ya, good afternoon good evening and good night.
+    - name: Luquiesceneの小屋
+      link: https://luq-blog.xyz
+      avatar: https://luq-blog.xyz/avatar.webp
+      descr: To be or not to be： that is the question.
+    - name: SUYANXIの小窝
+      link: https://suyanxi.top
+      avatar: https://suyanxi.top/images/tx.png
+      descr: 一个温暖的个人小窝
+    - name: sliorean
+      link: https://sliorean.site
+      avatar: https://sliorean.site/images/avatar.webp
+      descr: 个人技术博客，记录 AI Agent 研究与日常折腾
