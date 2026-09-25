@@ -1,0 +1,14 @@
+# yublog 重定向规则（发布目录 _redirects，Netlify 部署后读取）
+
+# 旧域名跳转
+https://blog.yusite.top/*  https://yu-blog.top/:splat  301!
+
+# 以下 8 篇文章已迁移至 sliorean.site，原链接 301 跳转（兼容带/不带斜杠）
+/23679*  https://sliorean.site/2026/02/OpenClaw_Installation_Guide/  301
+/62748*  https://sliorean.site/2025/11/cheap-host/  301
+/65417*  https://sliorean.site/2025/08/hexo-github-deploy/  301
+/28146*  https://sliorean.site/2025/09/hexo_first_blog/  301
+/10422*  https://sliorean.site/2025/08/installing-software/  301
+/26639*  https://sliorean.site/2026/04/jingdongyun-host/  301
+/16943*  https://sliorean.site/2025/11/umami/  301
+/49874*  https://sliorean.site/2025/08/website-construction-guide/  301
