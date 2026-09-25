@@ -7,84 +7,44 @@
   force = true
 
 # 以下 8 篇文章已迁移至 sliorean.site，原链接 301 跳转到对应文章
-# （每条同时覆盖带斜杠 / 不带斜杠两种请求形式）
+# 使用「/路径*」通配形式，兼容带斜杠 / 不带斜杠两种请求形式
 
 [[redirects]]
-  from = "/23679/"
+  from = "/23679*"
   to = "https://sliorean.site/2026/02/OpenClaw_Installation_Guide/"
   status = 301
 
 [[redirects]]
-  from = "/23679"
-  to = "https://sliorean.site/2026/02/OpenClaw_Installation_Guide/"
-  status = 301
-
-[[redirects]]
-  from = "/62748/"
+  from = "/62748*"
   to = "https://sliorean.site/2025/11/cheap-host/"
   status = 301
 
 [[redirects]]
-  from = "/62748"
-  to = "https://sliorean.site/2025/11/cheap-host/"
-  status = 301
-
-[[redirects]]
-  from = "/65417/"
+  from = "/65417*"
   to = "https://sliorean.site/2025/08/hexo-github-deploy/"
   status = 301
 
 [[redirects]]
-  from = "/65417"
-  to = "https://sliorean.site/2025/08/hexo-github-deploy/"
-  status = 301
-
-[[redirects]]
-  from = "/28146/"
+  from = "/28146*"
   to = "https://sliorean.site/2025/09/hexo_first_blog/"
   status = 301
 
 [[redirects]]
-  from = "/28146"
-  to = "https://sliorean.site/2025/09/hexo_first_blog/"
-  status = 301
-
-[[redirects]]
-  from = "/10422/"
+  from = "/10422*"
   to = "https://sliorean.site/2025/08/installing-software/"
   status = 301
 
 [[redirects]]
-  from = "/10422"
-  to = "https://sliorean.site/2025/08/installing-software/"
-  status = 301
-
-[[redirects]]
-  from = "/26639/"
+  from = "/26639*"
   to = "https://sliorean.site/2026/04/jingdongyun-host/"
   status = 301
 
 [[redirects]]
-  from = "/26639"
-  to = "https://sliorean.site/2026/04/jingdongyun-host/"
-  status = 301
-
-[[redirects]]
-  from = "/16943/"
+  from = "/16943*"
   to = "https://sliorean.site/2025/11/umami/"
   status = 301
 
 [[redirects]]
-  from = "/16943"
-  to = "https://sliorean.site/2025/11/umami/"
-  status = 301
-
-[[redirects]]
-  from = "/49874/"
-  to = "https://sliorean.site/2025/08/website-construction-guide/"
-  status = 301
-
-[[redirects]]
-  from = "/49874"
+  from = "/49874*"
   to = "https://sliorean.site/2025/08/website-construction-guide/"
   status = 301
